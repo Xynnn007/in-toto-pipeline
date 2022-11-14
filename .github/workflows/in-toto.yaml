@@ -1,13 +1,16 @@
 on: [push]
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
 jobs:
   test:
     runs-on: ubuntu-latest
     name: test intoto-run
     steps:
       - name: Code checkout
-          uses: actions/checkout@v2
-          with:
-            fetch-depth: 1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       
       - name: Install Rust toolchain stable
         uses: actions-rs/toolchain@v1
@@ -35,15 +38,11 @@ jobs:
         with:
           step-name: 'build'
           private-key: | 
-            -----BEGIN OPENSSH PRIVATE KEY-----
-            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-            QyNTUxOQAAACBAtHdbe7/w4cTXcAW53EPGQu/yImfKMbrVdCrs9d/zaAAAAKCFrVkmha1Z
-            JgAAAAtzc2gtZWQyNTUxOQAAACBAtHdbe7/w4cTXcAW53EPGQu/yImfKMbrVdCrs9d/zaA
-            AAAED0vzE/jDfA1vXMlymverURSj2uEHzDzJjHLiE8tAt4vEC0d1t7v/DhxNdwBbncQ8ZC
-            7/IiZ8oxutV0Kuz13/NoAAAAHHJvb3RAaVp1ZjYwNXk4c2JuYmp3dnkwYTVqaVoB
-            -----END OPENSSH PRIVATE KEY-----
+            -----BEGIN PRIVATE KEY-----
+            MC4CAQAwBQYDK2VwBCIEICmtWWk/6UydYjr7tmVUtPa7JIxHdhaJraSHXr2pSECu
+            -----END PRIVATE KEY-----
           command: cargo build --release
           products: 'target/release/in-toto-pipeline'
-          exclude: 'target/'
+          exclude: '[".git/",".github/"]'
       - name: show-attestation
         run: cat $RUNNER_TEMP/meta/*.link
