@@ -1,0 +1,49 @@
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test intoto-run
+    steps:
+      - name: Code checkout
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 1
+      
+      - name: Install Rust toolchain stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo fmt check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run rust lint check
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+      - uses: actions/checkout@v2
+      - uses: testifysec/intoto-run-action@main
+        name: intoto run command
+        with:
+          step-name: 'build'
+          private-key: | 
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACBAtHdbe7/w4cTXcAW53EPGQu/yImfKMbrVdCrs9d/zaAAAAKCFrVkmha1Z
+            JgAAAAtzc2gtZWQyNTUxOQAAACBAtHdbe7/w4cTXcAW53EPGQu/yImfKMbrVdCrs9d/zaA
+            AAAED0vzE/jDfA1vXMlymverURSj2uEHzDzJjHLiE8tAt4vEC0d1t7v/DhxNdwBbncQ8ZC
+            7/IiZ8oxutV0Kuz13/NoAAAAHHJvb3RAaVp1ZjYwNXk4c2JuYmp3dnkwYTVqaVoB
+            -----END OPENSSH PRIVATE KEY-----
+          command: cargo build --release
+          products: 'target/release/in-toto-pipeline'
+          exclude: 'target/'
+      - name: show-attestation
+        run: cat $RUNNER_TEMP/meta/*.link
