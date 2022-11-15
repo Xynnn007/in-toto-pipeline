@@ -16,8 +16,9 @@ jobs:
             -----BEGIN PRIVATE KEY-----
             MC4CAQAwBQYDK2VwBCIEICmtWWk/6UydYjr7tmVUtPa7JIxHdhaJraSHXr2pSECu
             -----END PRIVATE KEY-----
-          command: cd kata-containers/tools/osbuilder && sudo -E PATH=$PATH make USE_DOCKER=true AGENT_INIT=yes image
+          command: cd kata-containers/tools/packaging/kernel && ./build-kernel.sh setup
           products: 'target/release/in-toto-pipeline'
-          exclude: '[".git/*",".github/"]'
+          exclude: '.git/'
+
       - name: show-attestation
         run: cat $RUNNER_TEMP/meta/*.link
