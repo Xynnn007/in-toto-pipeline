@@ -7,42 +7,17 @@ jobs:
     runs-on: ubuntu-latest
     name: test intoto-run
     steps:
-      - name: Code checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      
-      - name: Install Rust toolchain stable
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo fmt check
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-      - name: Run rust lint check
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
-
       - uses: actions/checkout@v2
       - uses: testifysec/intoto-run-action@main
         name: intoto run command
         with:
-          step-name: 'build'
+          step-name: 'build kernel'
           private-key: | 
             -----BEGIN PRIVATE KEY-----
             MC4CAQAwBQYDK2VwBCIEICmtWWk/6UydYjr7tmVUtPa7JIxHdhaJraSHXr2pSECu
             -----END PRIVATE KEY-----
-          command: cargo build --release
+          command: cd kata-containers/tools/osbuilder && sudo -E PATH=$PATH make USE_DOCKER=true AGENT_INIT=yes image
           products: 'target/release/in-toto-pipeline'
-          exclude: '[".git/",".github/"]'
+          exclude: '[".git/*",".github/"]'
       - name: show-attestation
         run: cat $RUNNER_TEMP/meta/*.link
